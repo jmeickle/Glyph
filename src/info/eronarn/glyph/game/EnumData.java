@@ -23,16 +23,21 @@ abstract public class EnumData {
 	}
 	
 	public enum Slot {
-	    LeftHand,
-	    RightHand,
-	    Head,
-	    Neck,
+	    Right_Hand,
+	    Left_Hand,
 	    Body,
+	    Head,
 	    Cloak,
-	    Hands,
-	    LeftRing,
-	    RightRing,
-	    Feet,
+	    Gloves,
+	    Shoes,
+	    Right_Ring,
+	    Left_Ring,
+	    Necklace,
+	}
+	
+	// Items are jewellery if they're between Right_Ring and Necklace (inclusive).
+	public static boolean IsJewellery(Slot slot) {
+		return (slot.ordinal() >= Slot.Right_Ring.ordinal() && slot.ordinal() <= Slot.Necklace.ordinal());
 	}
 	
 	public enum Stat {
@@ -41,6 +46,7 @@ abstract public class EnumData {
 		Accuracy,
 	    Damage,
 	}
+	
 	public enum Material {
 		// Organic
 		min_organic,

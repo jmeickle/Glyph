@@ -105,9 +105,9 @@ public class Item {
 		public Weapon(ItemType which) {
 			// Defaults:
 			
-			SlotUsed = Slot.RightHand;
+			SlotUsed = Slot.Right_Hand;
 			Glyph = '/';
-			Name = which.toString().replace('_', ' ');;
+			Name = which.toString().replace('_', ' ');
 			
 			switch (which) {
 			// This is mostly here for perspective...

@@ -162,10 +162,10 @@ public abstract class Player {
 			Integer index = Game.player.Equipment.get(slot);
 			if (index != null) {
 				Item item = Game.player.Inventory.get(index);
-				Equipment.insert(new DefaultMutableTreeNode(slot.toString() + ": " + Player.IndexToLetter(index) + " - " + item.Name), Equipment.getChildCount());
+				Equipment.insert(new DefaultMutableTreeNode(slot.toString().replace('_', ' ') + ": " + Player.IndexToLetter(index) + " - " + item.Name), Equipment.getChildCount());
 			}
 			else
-				Equipment.insert(new DefaultMutableTreeNode(slot.toString() + ": nothing"), Equipment.getChildCount());
+				Equipment.insert(new DefaultMutableTreeNode(slot.toString().replace('_', ' ') + ": nothing"), Equipment.getChildCount());
 		}
 		
 		Main.u.gear.updateUI();
