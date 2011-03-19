@@ -8,6 +8,14 @@ abstract public class EnumData {
 		endgame, 
 	}
 	
+	public enum Command {
+		drop,
+		equip,
+		unequip,
+		done,
+		abort,
+	}
+	
 	public enum DataType {
 		monster,
 		feature,
