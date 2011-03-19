@@ -10,6 +10,9 @@ import info.eronarn.glyph.ui.CellPanel;
 import info.eronarn.glyph.ui.Keys;
 import info.eronarn.glyph.ui.UI;
 
+import java.awt.Graphics;
+import java.awt.Toolkit;
+import java.awt.image.BufferStrategy;
 import java.util.Random;
 
 public class Game {
@@ -44,22 +47,32 @@ public class Game {
         player = new Monster(MonsterType.player);
         playerindex = player.PlaceMonster(new Pair(map.startx, map.starty));
         queue.PlayerFirst(); // However, the player is a cheater; he gets to go first.
-            
-        // Let's go!
-        RunQueue();
+          
     }
 
     public static void repaintMap() {
     	
+    	BufferStrategy bf = Main.u.canvas.getBufferStrategy();
+    	Graphics g = null;
+    
+		g = bf.getDrawGraphics();
+		
     	for (int CurrY = 0; CurrY < UI.ymax; CurrY++) {
     	
-        	for (int CurrX = 0; CurrX < UI.xmax; CurrX++) {    	        
+        	for (int CurrX = 0; CurrX < UI.xmax; CurrX++) {    	      
     			CellPanel charcell = (CellPanel) Main.u.mainpanel.getComponent(CurrX + CurrY * UI.xmax);
-    			charcell.setGlyph(map.cell[CurrX][CurrY].Glyph());
+    			charcell.Cell.CheckGlyphs();
+
+    			if (charcell.Cell.Redraw) {
+    				charcell.Cell.Redraw = false;
+    				charcell.Redraw(g);
+    			}
+
         	}
     	}
-
-    	Main.u.mainpanel.repaint();
+		g.dispose();
+    	bf.show();
+    	Toolkit.getDefaultToolkit().sync();	
     }
 
     // Runs through the queue until the player comes up. Starts again when the player acts.
@@ -79,4 +92,9 @@ public class Game {
           Keys.GetCommand();
       }
     }
+
+	public void InitGame() {
+        // Let's go!
+        RunQueue();
+	}
 } 
