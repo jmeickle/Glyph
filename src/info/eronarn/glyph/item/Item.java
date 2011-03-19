@@ -171,6 +171,7 @@ public class Item {
 			// Defaults:
 			
 			Glyph = '[';
+			SlotUsed = Slot.Body;
 			Name = which.toString().replace('_', ' ');
 			
 			switch (which) {
