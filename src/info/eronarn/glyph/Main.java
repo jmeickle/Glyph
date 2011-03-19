@@ -6,9 +6,14 @@
  */
 package info.eronarn.glyph;
 
+import java.awt.Canvas;
+import java.awt.Graphics;
+import java.awt.image.BufferStrategy;
+
 import info.eronarn.glyph.game.*;
 import info.eronarn.glyph.ui.UI;
 import javax.swing.*;
+
 import org.pushingpixels.substance.api.skin.SubstanceDustLookAndFeel;
 
 /**
@@ -38,7 +43,7 @@ public class Main {
 	    }
 
 	    // Boot up the frame and change some settings.
-		w = new JFrame();
+		w = new JFrame();		
 		w.setTitle("Glyph");
 		w.setResizable(false);
 		w.setFocusable(true);
@@ -48,20 +53,21 @@ public class Main {
 				};
 				});
 		
-		// Boot up the UI - a JPanel stuffed full of goodies.
-		u = new UI();
-		u.initMap(); // Set up the tiles.
-
-		// Add the UI to the window.
-		w.add(u);
+		w.setVisible(true); // Display our fancy window!
 		
 		// Boot up the game. This is where the magic happens.
 		g = new Game();
 		
+		// Boot up the UI - a JPanel stuffed full of goodies.
+		u = new UI();
+
 		// Final touches:
+		w.add(u); // Add the UI to the window.
+		u.initMap(); // Set up the tiles.
 		w.setSize(800,620); // add 20 for the window title.
 		w.pack(); // Make sure everything fits nicely.
-		w.setVisible(true); // Display our fancy window!
-
+		
+		// Launch the game!
+		g.InitGame(); 
 		}
 }
