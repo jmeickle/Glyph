@@ -9,9 +9,13 @@ public class Cell {
 	
 	int Index; // The cell's unique ID.
 	Pair Coord; // The cell's X,Y coordinate pair.
-	public char Glyph; // The cell's display glyph.
+	public char FloorGlyph = ' ';
+	public char ItemGlyph = ' ';
+	public char MonsterGlyph = ' ';
+	public char SpecialGlyph = ' ';
 	public String Style; // The cell's display style.
 	public Character Trigger;
+	public boolean Redraw = true;
 	
 	// Terrain type of the Cell.
 	public enum cellType {
@@ -40,48 +44,57 @@ public class Cell {
 	}
 	public Cell(char Contents, Pair Pos) {
 		Coord = Pos;
-		Glyph = Contents;
+		FloorGlyph = Contents;
 		
-		switch (Glyph) {
-		case 'Q':
+		switch (FloorGlyph) {
 		case 'A':
 		case 'B':
 		case 'C':
+		case 'D':
+		case 'E':
 
-			Glyph = ' ';
+			FloorGlyph = ' ';
 			break;
-
+			
+		case 'Q':
 		case 'T':
 		case 'V':
-			Glyph = ' ';
+			FloorGlyph = ' ';
 
 			break;
 		default:
 			break;
 		}
 		
-		if (Glyph == '%') {
+		if (FloorGlyph == '%') {
 			char[] floor_types = {'.', ',', ' ', '`'};
-			Glyph = floor_types[Game.rng.nextInt(4)];
+			FloorGlyph = floor_types[Game.rng.nextInt(4)];
 		}
 		
 		
 	}
-	public char Glyph() {
+	public void CheckGlyphs() {
+		char oldmons = MonsterGlyph;
+		char olditem = ItemGlyph;
+		
 		Monster mons = Monster.GetMonsterAt(Coord);
 		if (mons != null && mons.Glyph != ' ')
-		    return mons.Glyph;
-		else {
-			Item item = Item.GetItemAt(Coord);
-			if (item != null && item.Glyph != ' ')		    
-				return item.Glyph;
-		}
-		// Fallback:
-			return this.Glyph;
+		    MonsterGlyph = mons.Glyph;
+		else
+			MonsterGlyph = ' ';
+		
+		Item item = Item.GetItemAt(Coord);
+		if (item != null && item.Glyph != ' ')
+			ItemGlyph = item.Glyph;
+		else
+			ItemGlyph = ' ';
+
+		if (oldmons != MonsterGlyph || olditem != ItemGlyph)
+			Redraw = true;
 	}
 	
 	public boolean Passable() {
-		return (Glyph == '.' || Glyph == ',' || Glyph == ' ' || Glyph == '`' || Glyph == '+' || Glyph == '=');
+		return (FloorGlyph == '.' || FloorGlyph == ',' || FloorGlyph == ' ' || FloorGlyph == '`' || FloorGlyph == '+' || FloorGlyph == '=');
 	}
 	
 	public void FireEvent(Monster monster) {
