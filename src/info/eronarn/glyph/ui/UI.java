@@ -1,9 +1,13 @@
 package info.eronarn.glyph.ui;
 
 import info.eronarn.glyph.Main;
+import info.eronarn.glyph.game.Game;
 
 import java.awt.Adjustable;
+import java.awt.Canvas;
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -26,7 +30,6 @@ import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreePath;
 
 public class UI extends JPanel {
 	
@@ -36,7 +39,9 @@ public class UI extends JPanel {
 	// These areas are exposed to make it easier to do stuff with them.
 	// They're indented according to their tree structure.
 	
+	public JPanel fakepanel; // Main panel, where the tiles are placed.
 	public JPanel mainpanel; // Main panel, where the tiles are placed.
+    	public Canvas canvas; // Canvas, for drawing on.
 	public JPanel sidepanel; // The entire sidebar, split into three sections.
 		public JPanel toparea; // Top part of the sidebar.
 			public JLabel namelabel; // Character's name.
@@ -48,6 +53,13 @@ public class UI extends JPanel {
 			public JTree gear; // Equipment and inventory.
 		public JPanel bottomarea; // Bottom section, where buttons will be placed as needed.
 	
+	// Font used for the viewport.
+	public static Font font = DemoFonts.getFont("Aesomatica_16x16.ttf").deriveFont((float) 16);
+	private static final Color lightGreen = new Color( 0x30ffaf );
+	private static final Color transparent = new Color( 0x00ffffff, true ); 	/* transparent white */
+	public static final Color transparent2 = new Color(255, 255, 255, 0);
+	    
+	    
 	/**
 	 * Constructor - this'll create everything in the layout.
 	 */
@@ -66,19 +78,42 @@ public class UI extends JPanel {
 		mainpanel = new JPanel();
 		mainpanel.setPreferredSize(new Dimension(580, 580));
 		mainpanel.setFocusable(false);
-		setSize(new Dimension(580, 580));
 		mainpanel.setBorder(new EtchedBorder(EtchedBorder.RAISED, null, null));
 		GridBagConstraints gbc_mainpanel = new GridBagConstraints();
 		gbc_mainpanel.anchor = GridBagConstraints.WEST;
 		gbc_mainpanel.gridx = 0;
-		gbc_mainpanel.gridy = 0;
-		add(mainpanel, gbc_mainpanel);
+		gbc_mainpanel.gridy = 1;
+//	    add(mainpanel, gbc_mainpanel);
 		GridBagLayout gbl_mainpanel = new GridBagLayout();
 		gbl_mainpanel.columnWidths = new int[xmax];
 		gbl_mainpanel.rowHeights = new int[ymax];
 		Arrays.fill(gbl_mainpanel.columnWidths, 16);
 		Arrays.fill(gbl_mainpanel.rowHeights, 16);
 		mainpanel.setLayout(gbl_mainpanel);
+		
+		fakepanel = new JPanel();
+		fakepanel.setPreferredSize(new Dimension(580, 580));
+		fakepanel.setFocusable(false);
+		fakepanel.setBorder(new EtchedBorder(EtchedBorder.RAISED, null, null));
+		GridBagConstraints gbc_fakepanel = new GridBagConstraints();
+		gbc_fakepanel.anchor = GridBagConstraints.WEST;
+		gbc_fakepanel.gridx = 0;
+		gbc_fakepanel.gridy = 0;
+	    add(fakepanel, gbc_fakepanel);
+		GridBagLayout gbl_fakepanel = new GridBagLayout();
+		gbl_fakepanel.columnWidths = new int[]{576};
+		gbl_fakepanel.rowHeights = new int[]{576};
+		fakepanel.setLayout(gbl_fakepanel);
+		
+		canvas = new Canvas();
+		canvas.setBackground(Color.black);
+		canvas.setPreferredSize(new Dimension(576, 576));
+		canvas.setFocusable(false);
+		GridBagConstraints gbc_canvas = new GridBagConstraints();
+		gbc_canvas.anchor = GridBagConstraints.WEST;
+		gbc_canvas.gridx = 0;
+		gbc_canvas.gridy = 0;
+		fakepanel.add(canvas, gbc_canvas);
 		
 		sidepanel = new JPanel();
 		sidepanel.setBorder(null);
@@ -217,15 +252,19 @@ public class UI extends JPanel {
 	
 	// This is broken out mostly for legibility.
     public void initMap() {
-
+    	
+		canvas.createBufferStrategy(2);
+		
     	// We make one cell for each x,y of the viewport:
     	for (int CurrY = 0; CurrY < ymax; CurrY++) {
         	
         	for (int CurrX = 0; CurrX < xmax; CurrX++) {
         		
-        		CellPanel charcell = new CellPanel();
-        		
+        		CellPanel charcell = new CellPanel(CurrX, CurrY);
+    
         		// Change some settings.
+//        		charcell.setDoubleBuffered(true);
+//        		charcell.setVisible(false);
         		charcell.setOpaque(true);
         		charcell.setFocusable(false);
     	        charcell.setBorder(BorderFactory.createEmptyBorder());
@@ -272,5 +311,11 @@ public class UI extends JPanel {
     		sb.setValue(sb.getMaximum());
            }
         } );
+	}
+
+	// Prints a message, but only if the caller isn't the player.
+	public static void MonPrint(int index, String Text) {
+		if (index != Game.playerindex)
+			UI.Print(Text);
 	}
 }
