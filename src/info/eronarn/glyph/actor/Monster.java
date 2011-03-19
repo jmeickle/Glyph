@@ -5,6 +5,7 @@ import java.util.HashMap;
 import info.eronarn.glyph.game.EnumData;
 import info.eronarn.glyph.game.Game;
 import info.eronarn.glyph.game.EnumData.MonsterType;
+import info.eronarn.glyph.game.EnumData.Slot;
 import info.eronarn.glyph.game.EnumData.Stat;
 import info.eronarn.glyph.item.Item;
 import info.eronarn.glyph.map.Pair;
@@ -38,8 +39,8 @@ public class Monster extends Actor {
     public boolean ChangeGear = true;
     public boolean HasInv = false;
     public boolean HasEquip = false;
-    public HashMap <EnumData.Slot, Item> Equipment;
-	public HashMap <Character, Item> Inventory;
+    public HashMap <EnumData.Slot, Integer> Equipment;
+	public HashMap <Integer, Item> Inventory;
 	
 	public Monster(MonsterType type) {
                 // Define monster stuff in another function...?
@@ -222,8 +223,8 @@ public class Monster extends Actor {
 			return 0;
 		
 		int mod = 0;
-		for (EnumData.Slot slots : EnumData.Slot.values()) {
-			Item item = Equipment.get(slots);
+		for (EnumData.Slot slot : EnumData.Slot.values()) {
+			Item item = GetItem(slot);
 			if (item != null)
 				mod += item.value(stat);
 		}
@@ -262,77 +263,84 @@ public class Monster extends Actor {
 	// equipment capabilities, too.
 	
     private void InitInventory(boolean equipment) {
-	    Inventory = new HashMap <Character, Item>();
+	    Inventory = new HashMap <Integer, Item>();
 	    HasInv = true;
     	if (equipment) {
     		HasEquip = true;
-    	    Equipment = new HashMap <EnumData.Slot, Item>();
+    	    Equipment = new HashMap <EnumData.Slot, Integer>();
     	}		
 	}
 
-	public boolean CanDrop() {
-		return (ChangeGear && !Inventory.isEmpty() && Item.CanDrop(Coord));
+	public boolean HasInSlot(int which, Slot slot) {
+		Integer index = Equipment.get(slot);
+		if (index != null && index == which)
+			return true;
+		else
+			return false;
 	}
 	
-	public void Drop(char letter) {
-		Item item = Inventory.remove(letter);
+	public Item GetItem(Slot slot) {
+		Integer index = Equipment.get(slot);
+		if (index != null)
+			return Inventory.get(index);
+		else
+			return null;
+	}
+	
+	public boolean CanDrop(int which) {
+		Item item = Inventory.get(which);
+		return (ChangeGear && Item.CanDrop(Coord) && !Inventory.isEmpty() && item != null && !HasInSlot(which, item.SlotUsed));
+	}
+	
+	public void Drop(int which) {
+		Item item = Inventory.remove(which);
 		Item.Drop(item, Coord);
-		UI.Print(Name + " drops " + item.Name + ".");
+		UI.MonPrint(Index, Name + " drops " + item.Name + ".");
 	}
 	
 	public boolean CanGet() {
-		return (ChangeGear && InventoryRoom() && Item.CanGet(Coord));
+		return (ChangeGear && Item.CanGet(Coord) && InventoryRoom());
 	}
 	
 	public Item Get() {
 		Item item = Item.Get(Coord);
-		Inventory.put(NextInventoryLetter(), item);
-		UI.Print(Name + " picks up " + item.Name + ".");
+		Inventory.put(NextInventoryNumber(), item);
+		UI.MonPrint(Index, Name + " picks up " + item.Name + ".");
 		return item;
 	}
 	
-	public boolean CanEquip(char letter) {
-		Item item = Inventory.get(letter);
-		if (ChangeGear && item != null && Equipment.get(item.SlotUsed) == null)
+	public boolean CanEquip(int which) {
+		Item item = Inventory.get(which);
+		if (ChangeGear && item != null && Equipment.get(item.SlotUsed) == null && !HasInSlot(which, item.SlotUsed))
 			return true;
 		else
 			return false;
 	}
 	
-	public void Equip(char letter) {
-		Item item = Inventory.get(letter);
-		Equipment.put(item.SlotUsed, item);
-		UI.Print(Name + " puts on " + item.Name + ".");
+	public void Equip(int which) {
+		Item item = Inventory.get(which);
+		Equipment.put(item.SlotUsed, which);
+		UI.MonPrint(Index, Name + " puts on " + item.Name + ".");
 	}
 	
-	public boolean CanUnequip(EnumData.Slot slot) {
-		if (ChangeGear && Equipment.get(slot) != null)
+	public boolean CanUnequip(int which) {
+		Item item = Inventory.get(which);
+		if (ChangeGear && item != null && HasInSlot(which, item.SlotUsed))
 			return true;
 		else
 			return false;
 	}
 	
-	public void Unequip(EnumData.Slot slot) {
-		Item unequipped = null;
-		if (InventoryRoom()) {
-			unequipped = Equipment.remove(slot);
-			Inventory.put(NextInventoryLetter(), unequipped);
-			UI.Print(Name + " takes off " + unequipped.Name + ".");
-		}
-		else if (Item.CanDrop(Coord)) {
-			unequipped = Equipment.remove(slot);
-			Item.Drop(unequipped, Coord);
-			UI.Print(Name + " takes off " + unequipped.Name + " and drops it on the ground.");
-		}
-		else
-			UI.Print(Name + " shouldn't be trying to unequip anything! Bug!");
+	public void Unequip(int which) {
+		Item item = Inventory.get(which);
+		int index = Equipment.remove(item.SlotUsed);
+		UI.MonPrint(Index, Name + " takes off " + Inventory.get(index).Name + ".");
 	}
 	
-	// 97 = 'a'. So, 26 letters, starting from there.
-	public char NextInventoryLetter() {
+	public int NextInventoryNumber() {
 		for (int i = 0; i < 26; i++) {
-			if (!Inventory.containsKey((char) (i + 97)))
-					return (char) (i + 97);
+			if (!Inventory.containsKey(i))
+					return i;
 		}
 		return '0';
 	}
